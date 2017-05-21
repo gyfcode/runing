@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,body{
+            width:100%;height:100%;
+            overflow: hidden;
+            padding:0;margin: 0;
+            position:relative;
+        }
+        .banner{
+        	position: absolute;
+        	left:0;top:0;
+        	width: 100%;
+        	height:100%;
+        	background-size:100% 100%;
+        	background: rgba(0,0,0,.5);
+        	text-align: center;
+        	color: #fff;
+        	font-size: 50px;
+        	font-style: italic;
+        	line-height:300px;
+        	text-shadow:0 0 100px red ;
+        	
+        	
+        }
+        canvas{
+            background: url(imgs/back/17.png);
+            background-repeat:repeat-x;
+            background-color:#fff;
+
+
+        }
+		@keyframes  mask1{
+		    0%{
+		        height:100%;
+		    }
+		    100%{
+		        height:0;
+		        overflow: hidden;
+		    }
+		}
+		#jumpbtn{
+			width:80px;
+			height:60px;
+			border-radius: 5px;
+			background:#fff;
+			background:#0000FF;
+			color:#fff;
+			line-height:60px;
+			text-align: center;
+			position: absolute;
+			font-weight: bold;
+			font-size:20px;
+			left:20px;
+			top:100px;
+			cursor: pointer;
+		}
+		#zidanbtn{
+			width:80px;
+			height:60px;
+			border-radius: 5px;
+			background:#fff;
+			background:#0000FF;
+			color:#fff;
+			line-height:60px;
+			text-align: center;
+			position: absolute;
+			font-weight: bold;
+			font-size:20px;
+			right:20px;
+			top:100px;
+			cursor: pointer;
+		}
+		.ppbox{
+			width:100px;
+			height:150px;
+			list-style: none;
+			position: absolute;
+			left: 15px;
+			top:100px;
+			
+		}
+		.ppbox li{
+			width:100%;
+			height:50px;
+			color:#fff;
+			font-weight: bold;
+		}
+		.ppbox li span{
+			color:red;
+			font-weight: bold;
+		}
+		.progress{
+			width:200px;
+			height: 8px!important;
+			border-radius: 2px;
+			overflow: hidden;
+			background: green;
+			margin-top: -20px;
+    		margin-bottom: 18px;
+		}
+		.progressInner{
+			display: block;
+			height: 100%;
+			width: 0%;
+			background: red;
+		}
+		#gameover{
+			position: absolute;
+			left: 0;
+			top: 0;
+			bottom:0;
+			right:0;
+			margin: auto ;
+			z-index: 33;
+			width:380px;
+			height:600px;
+			background:url('imgs/gameover.png') no-repeat center center;
+			background-size:cover;
+			display:none;
+			box-shadow: 0 0 5px #0000FF;
+		}
+		#fenshuover{
+			position: absolute;
+			left:0;
+			top:0;
+			width: 100%;
+			font-size:30px;
+			text-align: center;
+			top:45%;
+		}
+		#resize{
+			width:160px;
+			height:50px;
+			position: absolute;
+			left:0;
+			right:0;
+			top:58%;
+			margin: 0 auto;
+			
+		}
+		#fullpage{
+			position: absolute;
+			left: 0;
+			top:0;
+			display: none;
+			width:100%;
+			height:100%;
+			background:#83c7f3;
+			
+		}
+    </style>
+    <script src="game.js"></script>
+    <script src="imgload.js"></script>
+    <script src="touch.js"></script>
+    <script src="hitPix.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded",function(){//document对象加载完成事件
+
+          	var canvas=document.querySelector("canvas");//canvas 元素
+          	var cobj=canvas.getContext("2d");//canvas 2d对象
+          	var clientW,clientH;//浏览器宽高
+          	var runimg=document.querySelectorAll(".run");//获取所有跑的图片
+          	var jumpimg=document.querySelectorAll(".jump");//获取跳的图片
+          	var hinderimg=document.querySelectorAll(".hinder");//障碍物图片
+			var audioobj=document.getElementsByTagName("audio")[0];//跑的音频
+			var audioobj1=document.getElementsByTagName("audio")[1];//跳的音频
+			var audioobj2=document.getElementsByTagName("audio")[2];//游戏人物碰到障碍物的音频
+			var audioobj3=document.getElementsByTagName("audio")[3];//打枪的音频
+			var banner=document.getElementsByClassName("banner")[0];//游戏封面图
+			var jumpbtn=document.getElementById("jumpbtn");
+			var zidan=document.getElementById("zidanbtn");
+			var imgs=document.getElementById("imgs");
+			var gameover=document.getElementById("gameover");
+			var fenshuover=document.getElementById("fenshuover");
+			var resize=document.getElementById("resize");
+			var fullpage=document.getElementById("fullpage");
+			var one=document.getElementsByClassName("one")[0];//跳跃按钮
+			var two=document.getElementsByClassName("two")[0];//跳跃按钮
+			var three=document.getElementsByClassName("three")[0];//跳跃按钮
+			var progressInner=document.getElementsByClassName("progressInner")[0];//跳跃按钮
+			
+			
+	        window.onresize=function(){//浏览器尺寸变化事件
+	                clientW=document.documentElement.clientWidth;//浏览器宽高
+	                clientH=document.documentElement.clientHeight;//浏览器宽高
+	                canvas.width=clientW;//浏览器宽高==canvas 宽高
+	                canvas.height=clientH;//浏览器宽高==canvas 宽高
+	                if(canvas.width/1136>canvas.height/544){
+	                    canvas.style.backgroundSize="contain";//canvas 背景图适应浏览器宽高变化
+	                    gameover.style.backgroundSize="contain";
+	                }else{
+	                    canvas.style.backgroundSize="cover";//canvas 背景图适应浏览器宽高变化
+	                    gameover.style.backgroundSize="cover";//canvas 背景图适应浏览器宽高变化
+	                }
+					//让游戏中人物落地
+					var tops=(canvas.height)/3*2;
+					jumpbtn.style.cssText="top:"+tops+"px";
+					zidanbtn.style.cssText="top:"+tops+"px";
+	          }
+	        window.onresize();//提前window.onresize() 一次 让尺寸适应
+          
+          
+           var imgloadObj= new imageLoad(document.querySelectorAll("img"));//imageLoad.js  让所有图片加载完执行 游戏 防止 图片未载入
+	       imgloadObj.loadAll(function(){
+	        //实例化游戏对象对象//	参数1canvas元素2canvas 2d对象3获取所有跑的图片4获取跳的图片5障碍物图片6跑的音频7跳的音频8游戏人物碰到障碍物的音频	//9跳跃按钮
+				gameObj=new game(canvas,cobj,runimg,jumpimg,hinderimg,audioobj,audioobj1,audioobj2,jumpbtn,zidanbtn,imgs,audioobj3,one,two,three,progressInner,gameover,fenshuover,resize,fullpage);
+				gameObj.person.y=canvas.height-gameObj.person.height;//让游戏中障碍物落地
+				for(var i=0;i<gameObj.hinderArr.length;i++){
+	            gameObj.hinderArr[i].y=canvas.height-gameObj.hinderArr[i].height;
+	           }
+	        });
+                 
+                
+            touch.on(start,"touchstart",function(){
+            	gameObj.play(start,banner,zidanbtn);
+            })
+        })
+    </script>
+</head>
+<body>
+<ul class="ppbox">
+	<li id="peosonlife">生    命     值 ：<span class="one">3</span></li>
+	<li id="guanqia">当前关卡：<span class="two">0</span></li>
+	<li>当前进度：</li>
+	<li class="progress"><span class="progressInner"></span></li>
+	<li id="currfs">总     分         数 ：<span class="three">0</span></li>
+</ul>
+<canvas>
+
+</canvas>
+<div id="jumpbtn">跳跃</div>
+<div id="zidanbtn">手枪</div>
+<div id="gameover">
+	<div id=fenshuover>111</div>
+	<div id="resize"></div>
+</div>
+<div id=fullpage></div>
+<!--游戏封面图-->
+<div class="banner">
+	都   市   酷    跑   <br/>  <span  id="start">Let's GO</span >
+</div>
+<!--人物动起来的图片-->
+<img src="imgs/person/run1.png" alt="" class="run" hidden>
+<img src="imgs/person/run2.png" alt="" class="run" hidden>
+<img src="imgs/person/run3.png" alt="" class="run" hidden>
+<img src="imgs/person/run4.png" alt="" class="run" hidden>
+<img src="imgs/person/run5.png" alt="" class="run" hidden>
+<img src="imgs/person/run6.png" alt="" class="run" hidden>
+<img src="imgs/person/run7.png" alt="" class="run" hidden>
+
+<!--障碍物的图片-->
+<img src="imgs/hinder/boom.png" alt=""  hidden class="hinder">
+<img src="imgs/hinder/chick.png" alt="" hidden class="hinder">
+<img src="imgs/hinder/egg.png" alt="" hidden class="hinder">
+<img src="imgs/hinder/flow.png" alt="" hidden class="hinder">
+<img src="imgs/hinder/grass.png" alt="" hidden class="hinder">
+<img src="imgs/hinder/pail.png" alt="" hidden class="hinder">
+<img src="imgs/hinder/stone.png" alt="" hidden class="hinder">
+<img src="imgs/hinder/tree.png" alt="" hidden class="hinder">
+<img src="imgs/hinder/ys.png" alt="" hidden class="hinder">
+<img src="imgs/zd_02.png" alt="" hidden id="imgs"/>
+
+<!--跳起图片-->
+<img src="imgs/person/jump2.png" alt="" class="jump">
+<!--跑起来的音频-->
+<audio src="11.wav" controls preload loop>
+您的浏览器不支持 audio 标签。
+</audio>
+<!--跳起的音频-->
+<audio src="13.wav" controls preload>
+您的浏览器不支持 audio 标签。
+</audio>
+<!--游戏人物碰到障碍物的音频-->
+<audio src="12.wav" controls preload  loop>
+您的浏览器不支持 audio 标签。
+</audio>
+<audio src="14.wav" controls preload>
+您的浏览器不支持 audio 标签。
+</audio>
+</body>
+</html>
